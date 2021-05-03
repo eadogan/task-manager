@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
 const validator = require('validator')
 const jwt = require('jsonwebtoken')
+const Task = require('./Task')
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -44,6 +45,25 @@ const userSchema = new mongoose.Schema({
     }]
 })
 
+// Relationship between 2 entities
+userSchema.virtual('tasks', {
+    ref: 'Task',
+    localField: '_id',
+    foreignField: 'owner'
+})
+
+// Data hiding
+userSchema.methods.toJSON = function () {
+    const user = this
+    const userObject = user.toObject()
+
+    delete userObject.password
+    delete userObject.tokens
+
+    return userObject
+}
+
+// Generate authToken
 userSchema.methods.generateAuthToken = async function () {
     const user = this
 
@@ -69,7 +89,7 @@ userSchema.statics.findByCredentials = async (email, password) => {
 }
 
 
-// Middleware - Hash Password
+// Middleware - Hash the plain Password before saving
 userSchema.pre('save', async function (next) {
     const user = this
 
@@ -77,6 +97,14 @@ userSchema.pre('save', async function (next) {
         user.password = await bcrypt.hash(user.password, 8)
     }
 
+    next()
+})
+
+// Delete user's tasks when user is removed
+userSchema.pre('remove', async function(next) {
+    const user = this
+
+    Task.deleteMany({ owner: user._id })
     next()
 })
 
