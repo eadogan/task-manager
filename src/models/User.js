@@ -42,7 +42,11 @@ const userSchema = new mongoose.Schema({
             type: String,
             required: true
         }
-    }]
+    }], avatar: {
+        type: Buffer
+    }
+}, {
+    timestamps: true
 })
 
 // Relationship between 2 entities
@@ -59,6 +63,7 @@ userSchema.methods.toJSON = function () {
 
     delete userObject.password
     delete userObject.tokens
+    delete userObject.avatar
 
     return userObject
 }
@@ -68,7 +73,7 @@ userSchema.methods.generateAuthToken = async function () {
     const user = this
 
     // payload and secret key
-    const token = jwt.sign({ _id: user._id.toString() }, 'taskmanagerapi')
+    const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET)
     user.tokens = user.tokens.concat({ token })
     await user.save()
     return token
