@@ -26,7 +26,7 @@ MONGODB_URL=mongodb://...:27017/<mongodb_name><br />
 ```
 
 ## About
-This app uses Node JS
+This app uses Node JS with MongoDB Atlas
 
 ## Production Link on Heroku
 [task-manager-app](https://task-manager-api-dgn.herokuapp.com/)
